@@ -105,12 +105,39 @@ export class TokenDashboard implements Component {
       return;
     }
 
-    if (this.keybindings.matches(data, "tui.select.up") || data === "k") {
+    // Arrow keys switch tabs: ←/↑ previous, →/↓ next. Row selection moved to
+    // j/k and Shift+↑/↓ so plain arrows stay dedicated to navigation.
+    if (matchesKey(data, "left") || matchesKey(data, "up") || data === "h") {
+      this.cycleView(-1);
+      return;
+    }
+    if (matchesKey(data, "right") || matchesKey(data, "down") || data === "l") {
+      this.cycleView(1);
+      return;
+    }
+
+    if (
+      data === "k" ||
+      matchesKey(data, "shift+up") ||
+      (!this.isArrowKey(data) && this.keybindings.matches(data, "tui.select.up"))
+    ) {
       this.moveSelection(-1);
       return;
     }
-    if (this.keybindings.matches(data, "tui.select.down") || data === "j") {
+    if (
+      data === "j" ||
+      matchesKey(data, "shift+down") ||
+      (!this.isArrowKey(data) && this.keybindings.matches(data, "tui.select.down"))
+    ) {
       this.moveSelection(1);
+      return;
+    }
+    if (matchesKey(data, "home")) {
+      this.selectRow(0);
+      return;
+    }
+    if (matchesKey(data, "end")) {
+      this.selectRow(Number.POSITIVE_INFINITY);
       return;
     }
     if (this.keybindings.matches(data, "tui.select.pageUp")) {
@@ -213,6 +240,23 @@ export class TokenDashboard implements Component {
       this.invalidate();
       this.tui.requestRender();
     }
+  }
+
+  private isArrowKey(data: string): boolean {
+    return (
+      matchesKey(data, "up") ||
+      matchesKey(data, "down") ||
+      matchesKey(data, "left") ||
+      matchesKey(data, "right")
+    );
+  }
+
+  private selectRow(index: number): void {
+    const rows = this.visibleRowCount();
+    if (rows === 0) return;
+    this.selected = Math.min(rows - 1, Math.max(0, index));
+    this.invalidate();
+    this.tui.requestRender();
   }
 
   private moveSelection(delta: number): void {
@@ -429,10 +473,10 @@ export class TokenDashboard implements Component {
     const th = this.theme;
     const hints =
       this.view === "session"
-        ? "esc back · w web · e export · r refresh · q quit"
+        ? "esc back · ←→ tabs · w web · e export · r refresh · q quit"
         : this.view === "sessions"
-          ? "↑↓ select · enter open · tab views · d range · m model · c metric · s sort · ? help · q quit"
-          : "tab views · d range · m model · c metric · w web · ? help · q quit";
+          ? "←→ tabs · j/k select · enter open · d range · m model · c metric · s sort · ? help · q quit"
+          : "←→ tabs · d range · m model · c metric · w web · ? help · q quit";
     const lines = [this.rule(width), truncateToWidth(`${th.fg("dim", `  ${this.loading ? "⏳ " : ""}${hints}`)}`, width)];
     if (this.toast) {
       const color = this.toast.tone === "error" ? "error" : this.toast.tone === "success" ? "success" : "muted";
@@ -692,9 +736,12 @@ export class TokenDashboard implements Component {
   private renderHelp(width: number): string[] {
     const th = this.theme;
     const rows: [string, string][] = [
-      ["tab / shift+tab", "Switch view (overview, models, sessions, days)"],
+      ["← → / ↑ ↓", "Previous / next tab (wraps around)"],
+      ["tab / shift+tab", "Previous / next tab"],
       ["1 2 3 4", "Jump to a view"],
-      ["up / down, j / k", "Move the selection"],
+      ["j / k", "Move the row selection"],
+      ["shift+↑ / ↓", "Move the row selection"],
+      ["home / end", "First / last row"],
       ["enter", "Open the selected session"],
       ["esc / q", "Go back, then close the dashboard"],
       ["d / shift+d", "Next / previous date range"],

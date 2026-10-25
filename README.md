@@ -33,7 +33,7 @@ Reads pi's JSONL session files directly. No database, no telemetry, no network c
   openai/gpt-y                   ████████░░░░░░░░░░░░   2.46k    $0.26
 
 ────────────────────────────────────────────────────────────────────────────────────
-  tab views · d range · m model · c metric · w web · ? help · q quit
+  ←→ tabs · d range · m model · c metric · w web · ? help · q quit
 ```
 
 ## Features
@@ -105,9 +105,11 @@ Examples:
 
 | Key | Action |
 | --- | --- |
-| `tab` / `shift+tab` | Next / previous view |
+| `←` `→` / `↑` `↓` | Previous / next tab (wraps around, also `h` `l`) |
+| `tab` / `shift+tab` | Next / previous tab |
 | `1` `2` `3` `4` | Overview, Models, Sessions, Days |
-| `↑` `↓` / `j` `k` | Move selection |
+| `j` `k` / `shift+↑` `shift+↓` | Move row selection |
+| `home` `end` | First / last row |
 | `enter` | Open the selected session |
 | `esc` / `q` | Go back, then close |
 | `d` / `shift+d` | Next / previous date range |
@@ -122,7 +124,7 @@ Examples:
 
 ### Web dashboard shortcuts
 
-`?` shortcuts · `t` theme · `r` refresh · `1`–`5` date ranges · `m` metric · `/` session search · `e` export · `esc` close drawer
+`?` shortcuts · `t` theme · `r` refresh · `1`–`5` date ranges · `m` metric · `/` session search · `e` export · `esc` close the shortcuts panel or drawer (clicking outside also closes it)
 
 ## What counts
 

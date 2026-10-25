@@ -72,6 +72,9 @@ html[data-theme="light"] {
 
 * { box-sizing: border-box; }
 
+/* Author `display` rules must not defeat the `hidden` attribute. */
+[hidden] { display: none !important; }
+
 html, body { min-height: 100%; }
 
 body {

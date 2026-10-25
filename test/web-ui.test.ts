@@ -78,6 +78,10 @@ before(async () => {
     return 0;
   };
 
+  const style = window.document.createElement("style");
+  style.textContent = readFileSync(path.join(STATIC, "styles.css"), "utf8");
+  window.document.head.append(style);
+
   window.eval(readFileSync(path.join(STATIC, "theme.js"), "utf8"));
   window.eval(readFileSync(path.join(STATIC, "app.js"), "utf8"));
   await tick(60);
@@ -194,9 +198,25 @@ describe("web dashboard", () => {
     assert.equal(reset.searchParams.get("models"), null);
     assert.equal(reset.searchParams.get("range"), null);
 
-    dom.window.document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "?", bubbles: true }));
-    assert.equal(dom.window.document.querySelector("#shortcuts")?.hasAttribute("hidden"), false);
-    dom.window.document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-    assert.equal(dom.window.document.querySelector("#shortcuts")?.hasAttribute("hidden"), true);
+    const panel = dom.window.document.querySelector("#shortcuts") as HTMLElement;
+    assert.equal(panel.hidden, true);
+    assert.equal(dom.window.getComputedStyle(panel).display, "none");
+
+    const press = (key: string) =>
+      dom.window.document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key, bubbles: true }));
+
+    press("?");
+    assert.equal(panel.hidden, false);
+    assert.notEqual(dom.window.getComputedStyle(panel).display, "none");
+
+    // Regression: `.shortcuts { display: grid }` used to defeat the hidden attribute.
+    press("Escape");
+    assert.equal(panel.hidden, true);
+    assert.equal(dom.window.getComputedStyle(panel).display, "none");
+
+    press("?");
+    assert.equal(panel.hidden, false);
+    click("#shortcuts");
+    assert.equal(panel.hidden, true);
   });
 });

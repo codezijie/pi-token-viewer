@@ -877,6 +877,10 @@
       if (event.target === $("sessionDrawer")) closeDrawer();
     });
 
+    $("shortcuts").addEventListener("click", (event) => {
+      if (event.target === $("shortcuts")) $("shortcuts").hidden = true;
+    });
+
     window.addEventListener("resize", () => {
       if (latest) renderChart($("chart"), latest.byDay, { height: 250, tooltip: $("chartTooltip") });
     });

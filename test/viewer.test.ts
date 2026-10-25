@@ -311,11 +311,46 @@ describe("tui dashboard", () => {
     dashboard.handleInput("?");
     assert.ok(dashboard.render(80).some((line) => line.includes("Keyboard shortcuts")));
 
+    // Arrow keys switch tabs (→ next, ← previous, ↑ wraps backwards, ↓ next).
+    const RIGHT = "\x1b[C";
+    const LEFT = "\x1b[D";
+    const UP = "\x1b[A";
+    const DOWN = "\x1b[B";
+    const HOME = "\x1b[H";
+    const END = "\x1b[F";
+
+    dashboard.handleInput(RIGHT);
+    assert.match(dashboard.render(80).join("\n"), /Provider/);
+    dashboard.handleInput(DOWN);
+    assert.match(dashboard.render(80).join("\n"), /sorted by/);
+    dashboard.handleInput(LEFT);
+    assert.match(dashboard.render(80).join("\n"), /Provider/);
+    dashboard.handleInput(UP);
+    assert.match(dashboard.render(80).join("\n"), /Daily tokens/);
+    dashboard.handleInput(LEFT);
+    assert.match(dashboard.render(80).join("\n"), /Days shown|days shown/);
+    dashboard.handleInput("tab");
+    assert.match(dashboard.render(80).join("\n"), /Daily tokens/);
+    dashboard.handleInput("1");
+    assert.match(dashboard.render(80).join("\n"), /Daily tokens/);
+
+    // Row selection uses j/k (and shift+arrows), not plain arrows.
     dashboard.handleInput("3");
-    dashboard.handleInput("down");
+    dashboard.handleInput("j");
     dashboard.handleInput("enter");
     const detail = dashboard.render(100).join("\n");
-    assert.match(detail, /Models|Recent requests/);
+    assert.match(detail, /beta/);
+    assert.match(detail, /Recent requests/);
+
+    dashboard.handleInput("escape");
+    dashboard.handleInput(END);
+    dashboard.handleInput("enter");
+    assert.match(dashboard.render(100).join("\n"), /beta/);
+
+    dashboard.handleInput("escape");
+    dashboard.handleInput(HOME);
+    dashboard.handleInput("enter");
+    assert.match(dashboard.render(100).join("\n"), /Alpha work/);
 
     dashboard.handleInput("q");
     dashboard.handleInput("q");
