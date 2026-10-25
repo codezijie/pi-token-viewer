@@ -157,9 +157,12 @@ Override per session with `/tokens web --dir /path/to/sessions` or the `PI_CODIN
 
 ## Development
 
+Requires Node.js >= 22.18 (native TypeScript type stripping; the extension itself runs through pi's jiti on any supported pi version).
+
 ```bash
-npm install
-npm test            # 34 tests: scanner, aggregation, CSV, TUI rendering, HTTP API, jsdom UI
+npm ci
+npm run check:lockfile   # guards against local symlinks leaking into the lockfile
+npm test                 # 34 tests: scanner, aggregation, CSV, TUI rendering, HTTP API, jsdom UI
 npm run typecheck
 npm run preview -- --dir ~/.pi/agent/sessions --port 4789
 ```

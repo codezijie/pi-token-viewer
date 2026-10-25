@@ -26,7 +26,8 @@
   "scripts": {
     "test": "node --test test/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "preview": "node scripts/web-preview.ts"
+    "preview": "node scripts/web-preview.ts",
+    "check:lockfile": "node scripts/check-lockfile.mjs"
   },
   "devDependencies": {
     "@earendil-works/pi-ai": "^1.4.0",
@@ -41,6 +42,6 @@
     "@earendil-works/pi-coding-agent": ">=1.4.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18.0"
   }
 }
