@@ -1,0 +1,46 @@
+{
+  "name": "pi-token-viewer",
+  "version": "0.1.0",
+  "description": "Token & cost analytics for pi sessions \u2014 an interactive TUI dashboard and a local web dashboard with light/dark themes.",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "tokens",
+    "usage",
+    "cost",
+    "dashboard"
+  ],
+  "license": "MIT",
+  "pi": {
+    "extensions": [
+      "./extensions/token-viewer/index.ts"
+    ]
+  },
+  "files": [
+    "extensions",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "preview": "node scripts/web-preview.ts"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-ai": "^1.4.0",
+    "@earendil-works/pi-coding-agent": "^1.4.0",
+    "@earendil-works/pi-tui": "^1.4.0",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^24.0.0",
+    "jsdom": "^30.1.3",
+    "typescript": "^5.9.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=1.4.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

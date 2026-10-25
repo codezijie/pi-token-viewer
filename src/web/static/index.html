@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>pi token viewer</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%234cc2ff'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' font-family='monospace' fill='%230b0f14'%3E%C2%B5%3C/text%3E%3C/svg%3E" />
+    <script src="/assets/theme.js"></script>
+  </head>
+  <body data-token="__TOKEN__" data-dirs="__DIRS__" data-version="__VERSION__">
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="28" height="28"><circle cx="16" cy="16" r="14" fill="currentColor" opacity="0.16"/><path d="M10 22V10h5a4 4 0 0 1 0 8h-3" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <h1>pi token viewer</h1>
+          <p>Token &amp; cost analytics across your pi sessions</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <span class="live" id="live" title="Live updates from session files">
+          <span class="dot"></span><span id="liveLabel">connecting</span>
+        </span>
+        <div class="segmented theme-toggle" id="themeToggle" role="group" aria-label="Theme">
+          <button type="button" data-theme-choice="auto" title="Follow system theme">Auto</button>
+          <button type="button" data-theme-choice="light" title="Light theme">Light</button>
+          <button type="button" data-theme-choice="dark" title="Dark theme">Dark</button>
+        </div>
+        <button type="button" class="btn icon" id="refreshBtn" title="Rescan session files">
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Refresh</span>
+        </button>
+        <details class="menu" id="exportMenu">
+          <summary class="btn">Export</summary>
+          <div class="menu-items">
+            <button type="button" data-export="events">Usage events CSV</button>
+            <button type="button" data-export="sessions">Sessions CSV</button>
+            <button type="button" data-export="daily">Daily rollup CSV</button>
+          </div>
+        </details>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="filters" aria-label="Filters">
+        <div class="filter-group">
+          <span class="filter-label">Date</span>
+          <div class="segmented" id="rangeGroup" role="group" aria-label="Date range">
+            <button type="button" data-range="1">Today</button>
+            <button type="button" data-range="7">7d</button>
+            <button type="button" data-range="30">30d</button>
+            <button type="button" data-range="90">90d</button>
+            <button type="button" data-range="all" class="active">All</button>
+          </div>
+          <div class="dates">
+            <label><span>from</span><input type="date" id="fromInput" /></label>
+            <label><span>to</span><input type="date" id="toInput" /></label>
+          </div>
+        </div>
+
+        <div class="filter-group grow">
+          <span class="filter-label">Models</span>
+          <div class="chips" id="modelChips" role="group" aria-label="Model filter">
+            <span class="chip placeholder">loading…</span>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Project</span>
+          <select id="projectSelect" aria-label="Project filter">
+            <option value="">All projects</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Metric</span>
+          <div class="segmented" id="metricGroup" role="group" aria-label="Metric">
+            <button type="button" data-metric="tokens" class="active">Tokens</button>
+            <button type="button" data-metric="cost">Cost</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn ghost" id="resetBtn">Reset filters</button>
+      </section>
+
+      <section class="kpis" id="kpis" aria-label="Totals">
+        <article class="kpi"><span class="kpi-label">Total tokens</span><strong id="kpiTokens">—</strong><span class="kpi-sub" id="kpiTokensSub">—</span></article>
+        <article class="kpi"><span class="kpi-label">Cost</span><strong id="kpiCost">—</strong><span class="kpi-sub" id="kpiCostSub">—</span></article>
+        <article class="kpi"><span class="kpi-label">Requests</span><strong id="kpiRequests">—</strong><span class="kpi-sub" id="kpiRequestsSub">—</span></article>
+        <article class="kpi"><span class="kpi-label">Sessions</span><strong id="kpiSessions">—</strong><span class="kpi-sub" id="kpiSessionsSub">—</span></article>
+        <article class="kpi"><span class="kpi-label">Cache hit</span><strong id="kpiCache">—</strong><span class="kpi-sub" id="kpiCacheSub">—</span></article>
+        <article class="kpi"><span class="kpi-label">Avg / request</span><strong id="kpiAvg">—</strong><span class="kpi-sub" id="kpiAvgSub">—</span></article>
+      </section>
+
+      <section class="grid">
+        <article class="card span-2">
+          <header class="card-head">
+            <h2>Daily usage</h2>
+            <div class="head-tools">
+              <span class="hint" id="chartHint"></span>
+              <div class="legend">
+                <span><i class="swatch input"></i>input</span>
+                <span><i class="swatch output"></i>output</span>
+                <span><i class="swatch cache"></i>cache</span>
+              </div>
+            </div>
+          </header>
+          <div class="chart-wrap">
+            <div class="chart" id="chart" role="img" aria-label="Daily token usage chart"></div>
+            <div class="chart-tooltip" id="chartTooltip" hidden></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <header class="card-head"><h2>By kind</h2></header>
+          <div class="bars" id="kindList"></div>
+        </article>
+
+        <article class="card span-2">
+          <header class="card-head"><h2>Models</h2><span class="hint" id="modelHint"></span></header>
+          <div class="table-wrap"><table class="data" id="modelTable"><thead></thead><tbody></tbody></table></div>
+        </article>
+
+        <article class="card">
+          <header class="card-head"><h2>Projects</h2></header>
+          <div class="bars" id="projectList"></div>
+        </article>
+
+        <article class="card span-2">
+          <header class="card-head">
+            <h2>Sessions</h2>
+            <div class="head-tools">
+              <input type="search" id="sessionSearch" placeholder="Filter sessions…" aria-label="Filter sessions" />
+              <button type="button" class="btn ghost" id="clearSession" hidden>Clear session focus</button>
+              <span class="hint" id="sessionHint"></span>
+            </div>
+          </header>
+          <div class="table-wrap"><table class="data" id="sessionTable"><thead></thead><tbody></tbody></table></div>
+        </article>
+
+        <article class="card">
+          <header class="card-head"><h2>Data</h2></header>
+          <dl class="meta" id="dataMeta"></dl>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Local only · data read from <code id="footerDirs">__DIRS__</code></span>
+      <span>pi-token-viewer v<span id="footerVersion">__VERSION__</span> · <kbd>?</kbd> for shortcuts</span>
+    </footer>
+
+    <aside class="drawer" id="sessionDrawer" aria-hidden="true" aria-label="Session detail">
+      <div class="drawer-backdrop" data-close-drawer></div>
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+        <header class="drawer-head">
+          <div>
+            <h2 id="drawerTitle">Session</h2>
+            <p id="drawerSub"></p>
+          </div>
+          <div class="drawer-actions">
+            <button type="button" class="btn ghost" id="focusSession">Focus this session</button>
+            <button type="button" class="btn icon" data-close-drawer aria-label="Close">✕</button>
+          </div>
+        </header>
+        <div class="drawer-body" id="drawerBody"></div>
+      </div>
+    </aside>
+
+    <div class="toast" id="toast" hidden></div>
+
+    <div class="shortcuts" id="shortcuts" hidden>
+      <div class="shortcuts-panel">
+        <h3>Keyboard shortcuts</h3>
+        <ul>
+          <li><kbd>t</kbd> cycle theme</li>
+          <li><kbd>r</kbd> refresh</li>
+          <li><kbd>1</kbd>–<kbd>5</kbd> date ranges (today, 7d, 30d, 90d, all)</li>
+          <li><kbd>m</kbd> toggle metric (tokens / cost)</li>
+          <li><kbd>/</kbd> filter sessions</li>
+          <li><kbd>e</kbd> export events CSV</li>
+          <li><kbd>esc</kbd> close drawer or this panel</li>
+          <li><kbd>?</kbd> toggle this panel</li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
